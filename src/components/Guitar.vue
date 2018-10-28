@@ -20,6 +20,9 @@
 
 <script>
 import scaleMusic from "@/services/scaleMusic";
+let soundfontUrl = isProd ? 'https://scalemusicapi.herokuapp.com' : '//localhost:3000';
+const isProd = process.env.NODE_ENV === 'production';
+
 var context = new (window.AudioContext || window.webkitAudioContext)();
 import MIDI from "midi.js";
 
@@ -117,7 +120,7 @@ export default {
       }
       let self = this;
       MIDI.loadPlugin({
-        soundfontUrl: "http://gleitz.github.io/midi-js-soundfonts/MusyngKite/",
+        soundfontUrl: soundfontUrl + "/instrument/",
         instrument: "acoustic_guitar_nylon",
         onsuccess: function() {
           let player = MIDI.Player;
