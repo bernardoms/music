@@ -132,7 +132,6 @@ export default {
             if (data.message == 144) {
               self.noteMidi = MIDI.noteToKey[note];
             } else {
-              //self.noteMidi = MIDI.noteToKey[note];
               self.noteMidi = "";
             }
           });
