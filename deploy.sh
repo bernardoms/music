@@ -19,8 +19,8 @@ cd dist
 git init
 
 # dentro desse repositório nós pretendemos ser um novo usuário
-git config user.name "Marco Carvalho"
-git config user.email "marcolucio27@gmail.com"
+git config user.name "bernardoms"
+git config user.email "bernardo@csu.fullerton.edu"
 
 # O primeiro e único commit do seu repositório terá
 # todos os arquivos presentes e a mensagem do commit será "Deploy to GitHub Pages"
