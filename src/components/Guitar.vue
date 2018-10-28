@@ -9,22 +9,27 @@
     .row.no-gutters.text-center(v-for="string in strings")
       .col.p-0(v-for="(note, index) in guitar.notes.slice(string, size + string)" @click="start(note)")
         .row.no-gutters
-          .col.p-0.border
-            div(:class="scaleNotes.includes(note.name) ? 'bg-' + noteColor.find(x => x.note === note.name).color : 'opacity-25'")
+          .col.p-0.border(v-if="playng==true")
+            div(:class="noteMidi.includes(note.name.includes('/') ? note.name.split('/')[1]+note.octave : note.name+note.octave) ? 'bg-' + noteColor.find(x => x.note == note.name).color : 'opacity-25'")
+              .font-weight-bold.text-white.text-shadow {{note.name + note.octave}}
+          .col.p-0.border(v-else)
+             div(:class="scaleNotes.includes(note.name) ? 'bg-' + noteColor.find(x => x.note === note.name).color : 'opacity-25'")
               .font-weight-bold.text-white.text-shadow {{note.name}}
           .col.p-0(v-if="index === 0")
 </template>
 
 <script>
-
-import scaleMusic from "@/services/scaleMusic"
+import scaleMusic from "@/services/scaleMusic";
 var context = new (window.AudioContext || window.webkitAudioContext)();
+import MIDI from "midi.js";
 
 export default {
-  props: ["noteColor", "scaleNotes"],
+  props: ["noteColor", "scaleNotes", "midiFile"],
   data() {
     return {
+      playng: false,
       size: 13,
+      noteMidi: "",
       strings: [4, 9, 14, 19, 23, 28],
       guitar: {
         notes: [
@@ -83,24 +88,77 @@ export default {
       }
     };
   },
+
+  created() {
+    this.$parent.$on("myevent", e => {
+      if (e != undefined) {
+        console.log(e);
+      }
+      this.playMusic(this.midiFile);
+    });
+  },
+
   methods: {
     start(note) {
-      scaleMusic.get("sounds", {
-        params: {
-          note: note.name,
-          oct: note.octave
-        },
-         responseType: 'arraybuffer',
-      }).then(function(response){
-        playSound(response.data,context)
-      })
+      scaleMusic
+        .get("sounds", {
+          params: {
+            note: note.name,
+            oct: note.octave
+          },
+          responseType: "arraybuffer"
+        })
+        .then(function(response) {
+          playSound(response.data, context);
+        });
+    },
+
+    playMusic(song) {
+      if(song == null){
+        return;
+      }
+      let self = this;
+      MIDI.loadPlugin({
+        soundfontUrl: "http://gleitz.github.io/midi-js-soundfonts/MusyngKite/",
+        instrument: "acoustic_guitar_nylon",
+        onsuccess: function() {
+          let player = MIDI.Player;
+          self.playng = true;
+          MIDI.programChange(0, MIDI.GM.byName["acoustic_guitar_nylon"].number);
+          player.timeWarp = 1.5;
+          player.loadFile(song, player.start);
+          player.addListener(function(data) {
+            let note = data.note;
+            if (data.message == 144) {
+              self.noteMidi = MIDI.noteToKey[note];
+            } else {
+              //self.noteMidi = MIDI.noteToKey[note];
+              self.noteMidi = "";
+            }
+          });
+          MIDI.Player.setAnimation(function(data) {
+            var now = data.now; // where we are now
+            var end = data.end; // time when song ends
+            if (end - now <= 0) {
+              self.playng = false;
+            }
+          });
+        }
+      });
     }
-  },
-};
-  function playSound(data,ctx){
-      var source = ctx.createBufferSource();
-      context.decodeAudioData(data, function(buffer) { source.buffer = buffer;}, null);
-      source.connect(ctx.destination);
-      source.start(0);
   }
+};
+
+function playSound(data, ctx) {
+  var source = ctx.createBufferSource();
+  context.decodeAudioData(
+    data,
+    function(buffer) {
+      source.buffer = buffer;
+    },
+    null
+  );
+  source.connect(ctx.destination);
+  source.start(0);
+}
 </script>
