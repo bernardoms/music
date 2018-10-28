@@ -91,9 +91,7 @@ export default {
 
   created() {
     this.$parent.$on("myevent", e => {
-      if (e != undefined) {
-        console.log(e);
-      }
+      e;
       this.playMusic(this.midiFile);
     });
   },
