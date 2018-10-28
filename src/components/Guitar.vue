@@ -20,8 +20,9 @@
 
 <script>
 import scaleMusic from "@/services/scaleMusic";
-let soundfontUrl = isProd ? 'https://scalemusicapi.herokuapp.com' : '//localhost:3000';
 const isProd = process.env.NODE_ENV === 'production';
+let soundfontUrl = isProd ? 'https://scalemusicapi.herokuapp.com' : '//localhost:3000';
+
 
 var context = new (window.AudioContext || window.webkitAudioContext)();
 import MIDI from "midi.js";
