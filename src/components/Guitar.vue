@@ -19,16 +19,15 @@
 </template>
 
 <script>
-import scaleMusic from "@/services/scaleMusic";
-const isProd = process.env.NODE_ENV === 'production';
-let soundfontUrl = isProd ? 'https://scalemusicapi.herokuapp.com' : '//localhost:3000';
+const isProd = process.env.NODE_ENV === "production";
+let soundfontUrl = isProd
+  ? "https://scalemusicapi.herokuapp.com"
+  : "//localhost:3000";
 
-
-var context = new (window.AudioContext || window.webkitAudioContext)();
 import MIDI from "midi.js";
 
 export default {
-  props: ["noteColor", "scaleNotes", "midiFile"],
+  props: ["noteColor", "scaleNotes", "midiFile", "instrument"],
   data() {
     return {
       playng: false,
@@ -102,31 +101,37 @@ export default {
 
   methods: {
     start(note) {
-      scaleMusic
-        .get("sounds", {
-          params: {
-            note: note.name,
-            oct: note.octave
-          },
-          responseType: "arraybuffer"
-        })
-        .then(function(response) {
-          playSound(response.data, context);
-        });
+      let instrument = this.instrument != null ? this.instrument : "acoustic_guitar_nylon";
+      MIDI.loadPlugin({
+        soundfontUrl: soundfontUrl + "/instrument/",
+        instrument: instrument,
+        onsuccess: function() {
+          var delay = 0; // play one note every quarter second
+          var key = note.name.includes("#")
+            ? note.name.split("/")[1]
+            : note.name;
+          var velocity = 127; // how hard the note hits
+          MIDI.programChange(0, MIDI.GM.byName[instrument].number);
+          MIDI.setVolume(0, 127);
+          MIDI.noteOn(0, MIDI.keyToNote[key + note.octave], velocity, delay);
+          MIDI.noteOff(0, MIDI.keyToNote[key + note.octave], delay + 0.75);
+        }
+      });
     },
 
     playMusic(song) {
-      if(song == null){
+      if (song == null) {
         return;
       }
       let self = this;
+      let instrument = this.instrument != null ? this.instrument : "acoustic_guitar_nylon";
       MIDI.loadPlugin({
         soundfontUrl: soundfontUrl + "/instrument/",
-        instrument: "acoustic_guitar_nylon",
+        instrument: instrument,
         onsuccess: function() {
           let player = MIDI.Player;
           self.playng = true;
-          MIDI.programChange(0, MIDI.GM.byName["acoustic_guitar_nylon"].number);
+          MIDI.programChange(0, MIDI.GM.byName[instrument].number);
           player.timeWarp = 1.5;
           player.loadFile(song, player.start);
           player.addListener(function(data) {
@@ -149,17 +154,4 @@ export default {
     }
   }
 };
-
-function playSound(data, ctx) {
-  var source = ctx.createBufferSource();
-  context.decodeAudioData(
-    data,
-    function(buffer) {
-      source.buffer = buffer;
-    },
-    null
-  );
-  source.connect(ctx.destination);
-  source.start(0);
-}
 </script>

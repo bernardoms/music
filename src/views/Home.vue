@@ -14,6 +14,11 @@
         strong Midi:
         select.form-control(v-model="midi")
           option(v-for="(midi) in midis") {{midi.name}}
+    .row(@change="setInstrument()")
+      .col.mb-3
+        strong Instrumentos:
+        select.form-control(v-model="instrument")
+          option(v-for="instrument in instruments") {{instrument}}
       .col.mb-3
          button(type='button' class="pure-button pure-button-primary"  @click="playMusic()") play
     hr
@@ -22,7 +27,7 @@
         .p-1.border.text-center(:class="[scaleNotes.includes(note) ? ['bg-' + colorsByNote[index]] : 'opacity-25']")
           .font-weight-bold.text-white.text-shadow {{note}}
     hr
-    Guitar(:noteColor="noteColor" :scaleNotes="scaleNotes" :midiFile="midiFile")
+    Guitar(:noteColor="noteColor" :scaleNotes="scaleNotes" :midiFile="midiFile" :instrument="instrument")
 </template>
 
 <script>
@@ -67,6 +72,8 @@ export default {
       scaleNote: null,
       scaleNotes: [],
       scaleRoman: [],
+      instruments: ["acoustic_grand_piano", "acoustic_guitar_nylon", "banjo", "cello", "acoustic_bass", "electric_bass_pick", "electric_guitar_clean", "flute", "ocarina" ],
+      instrument: null,
       midi: null,
       midiFile: null,
       midis: [],
@@ -98,9 +105,12 @@ export default {
                     {name: "Silent Night - C maior", file: "data:audio/mid;base64,TVRoZAAAAAYAAQACAQBNVHJrAAAAGQD/WAQDAhgIAP9ZAgAAAP9RAwknwAH/LwBNVHJrAAACtADAAACweQAAsEAAALBbMACwCjMAsAdkAJBDNQCweQAAsEAAALBbMACwCjMAsAdkAP8DBVBpYW5vAJA8NYMAkEU4B4BDAHmQQz0CgEUAgX6QQDYAgDwAAJA8OQWAQwCFe5BDQQCAPAAAkDxAD4BAAIJxkEVDB4BDAHmQQzoCgEUAgX6QQDMAgDwAAJA8PQWAQwCBe4A8AACQOz2CAIA7AACQOT2BWYBAACeQSkcAgDkAAJA3OoQAgEoAAJBKQoIAkEc6AIA3AACQNzcFgEoAg3uANwAAkDc9ggCQSDoAgDcAAJA8Rw+ARwCDcYBIAACQSDuCAJBDMQCAPAAAkDw+BYBIAIVUgEMAJ5BFOwCAPAAAkDU2hACARQAAkEU/ggCQSEgAgDUAAJA1OwWARQCCe5BHNweASAB5kEUwAoBHAIF+kEM7AIA1AACQPEgFgEUAgnuQRT0HgEMAeZBDQwKARQCBfpBAQgCAPAAAkDxBBYBDAIVUgEAAJ5BFPwCAPAAAkDU7hACARQAAkEU+ggCQSEYAgDUAAJA1OQWARQCCe5BHPAeASAB5kEU1AoBHAIF+kEM7AIA1AACQPEQFgEUAgnuQRT4HgEMAeZBDPAKARQCBfpBAMwCAPAAAkDw6BYBDAIF7gDwAAJA7N4IAgDsAAJA5PIFZgEAAJ5BKSgCAOQAAkDc5hACASgAAkEpEggCQTUgAgDcAAJA3QwWASgCBe5BKOwWATQCBe5BHQAWASgCBe5BIUACANwAAkDxTBYBHAIV7kExMAIA8AACQPEIPgEgAhUqATAAnkEg1AIA8AACQPECCAJBDLQWASACBe5BAOgWAQwCBe5BDPgCAPAAAkDc4BYBAAIJ7kEE3B4BDAHmQPi8CgEEAgX6QPDsAgDcAAJA8RAWAPgCFVIA8ACeAPAAB/y8A"}];
     },
     setMidi(){
-      
       var index = this.midis.map(function (midi) { return midi.name; }).indexOf(this.midi);
       this.midiFile = this.midis[index].file
+    },
+
+    setInstrument(instrument){  
+      return this.instruments.indexOf(instrument);
     },
 
     async getScaleNotes() {
